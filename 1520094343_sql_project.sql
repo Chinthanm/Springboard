@@ -111,22 +111,16 @@ ORDER BY cost DESC
 
 /* Q9: This time, produce the same result as in Q8, but using a subquery. */
 
-SELECT name AS facility_name, 
-	CONCAT( firstname,  ' ', surname ) AS member_Name, 
-	CAST( starttime AS DATE ) AS date, 
-	(CASE WHEN b.memid = 0 THEN guestcost * slots
-	ELSE membercost * slots END) AS cost
-FROM country_club.Facilities a
-INNER JOIN (
-	SELECT * 
-	FROM country_club.Bookings
-	WHERE CAST( starttime AS DATE ) =  '2012-09-14'
-	)b ON a.facid = b.facid
-INNER JOIN country_club.Members c ON b.memid = c.memid
-WHERE (CASE WHEN b.memid =0
-	THEN guestcost
-	ELSE membercost
-	END >30)
+SELECT * FROM
+(SELECT DISTINCT Facilities.name AS facility_name,
+	CONCAT(Members.firstname, ' ', Members.surname) AS member_name,
+	CASE WHEN Bookings.memid = 0 THEN Bookings.slots * Facilities.guestcost
+	ELSE Bookings.slots * Facilities.membercost END AS cost
+FROM Bookings
+	JOIN Members on Bookings.memid = Members.memid
+	JOIN Facilities on Bookings.facid = Facilities.facid
+WHERE CAST(Bookings.starttime AS DATE) = '2012-09-14')
+A1 WHERE cost > 30
 ORDER BY Cost DESC
 
 /* Q10: Produce a list of facilities with a total revenue less than 1000.
